@@ -1,0 +1,33 @@
+# NAME:     discourse/base-newgit
+# VERSION:  dev
+FROM _DOCKER_BASE_ID_
+
+## TUNA debian mirror, useful for mainland China users in the edu network
+#RUN { echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster main contrib non-free" && \
+#      echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ buster main contrib non-free" && \
+#      echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-updates main contrib non-free" && \
+#      echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-updates main contrib non-free" && \
+#      echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-backports main contrib non-free" && \
+#      echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-backports main contrib non-free" && \
+#      echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security buster/updates main contrib non-free" && \
+#      echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security buster/updates main contrib non-free"; } > /etc/apt/sources.list
+
+RUN apt update
+
+# dependencies handled by discourse/base
+# apt -y install autoconf zlib1g-dev gettext build-essential gcc g++
+
+# install a git free of gnutls
+RUN cd / && \
+    vcurl=7.68.0 && wget http://dl.uxnr.de/mirror/curl/curl-$vcurl.tar.gz && \
+    vssl=1.1.1f && wget http://www.openssl.org/source/openssl-$vssl.tar.gz && \
+    vgit=2.31.1 && wget http://mirrors.edge.kernel.org/pub/software/scm/git/git-$vgit.tar.gz && \
+    tar -zxf curl-$vcurl.tar.gz && tar -zxf openssl-$vssl.tar.gz && \
+    tar -zxf git-$vgit.tar.gz && \
+    cd openssl-$vssl && apt -y install perl && ./config --prefix=/usr/local && make && make install && cd .. && \
+    cd curl-$vcurl && ./configure --with-ssl=/usr/local --prefix=/usr/local --without-gnutls --disable-ldap --without-librtmp && make && make install && cd .. && \
+    cd git-$vgit && make configure && ./configure --prefix=/usr/local --with-openssl=/usr/local --with-curl=/usr/local && make && make install && cd ../ && \
+    rm -rf /curl-${vurl}* /openssl-${vssl}* /git-${vgit}*
+# check git install
+RUN which git && git version && (ldd -v /usr/local/libexec/git-core/git-remote-https | grep gnutls) || echo "Git is not linked to libgnutls"
+
