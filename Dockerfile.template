@@ -14,8 +14,12 @@ FROM _DOCKER_BASE_ID_
 
 RUN apt update
 
-# dependencies handled by discourse/base
-# apt -y install autoconf zlib1g-dev gettext build-essential gcc g++
+# some dependencies handled by discourse/base
+#apt -y install autoconf zlib1g-dev build-essential gcc g++
+
+# dependencies required by git
+# tclsh failed; using unoptimized loading: install tcl and tk
+RUN apt -y install gettext tcl tk
 
 # install a git free of gnutls
 RUN cd / && \
