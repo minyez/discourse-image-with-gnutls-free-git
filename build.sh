@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 tagname="discourse/base:newgit"
-baseid=$(docker images 2>/dev/null | awk '/^discourse\/base   [0-9]/ {print $3}' | tail -1)
+# use head to get the newest version base
+baseid=$(docker images 2>/dev/null | awk '/^discourse\/base[ ]+[0-9]/ {print $3}' | head -1)
 [[ -z "$baseid" ]] && { echo "No tagged official Discourse base image found. Exit."; exit 1; }
 sed "s/_DOCKER_BASE_ID_/$baseid/g" Dockerfile.template > Dockerfile
 
